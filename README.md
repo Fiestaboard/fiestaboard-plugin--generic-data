@@ -1,6 +1,6 @@
 # Generic Data Plugin
 
-![Generic Data Display](./docs/generic-data-display.png)
+![Generic Data Display](./docs/board-display.png)
 
 Fetch data from any URL (JSON or XML) and map fields to template variables — no custom plugin needed. Supports **multiple feeds** so you can pull data from several APIs at once.
 
