@@ -213,7 +213,9 @@ class GenericDataPlugin(PluginBase):
 
     def fetch_data(self) -> PluginResult:
         """Fetch data from all configured feeds and merge mappings."""
-        feeds = _build_feeds(self.config)
+        # Resolve {{date}}, {{year}}, etc. in URLs, headers, and bodies (FiestaBoard #537).
+        resolved_config = self.resolve_config_variables()
+        feeds = _build_feeds(resolved_config)
 
         if not feeds:
             return PluginResult(available=False, error="No data feeds configured")

@@ -23,6 +23,8 @@ Enter the full URL to your data source, for example:
 https://api.example.com/sensor/latest
 ```
 
+You can include **built-in placeholders** in the URL or header values so they update each fetch (FiestaBoard 4.2.0+), for example `https://api.example.com/data?date={{date}}` or `{{date:%Y%m%d}}`. See the FiestaBoard plugin development guide for the full list.
+
 #### Format
 
 Choose `json` (default) or `xml` depending on what the URL returns.
