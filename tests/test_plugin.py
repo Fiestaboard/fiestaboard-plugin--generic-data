@@ -4,6 +4,7 @@ Coverage requirement: 80% minimum
 """
 
 import json
+import re
 from pathlib import Path
 from unittest.mock import patch, MagicMock, Mock
 
@@ -302,6 +303,56 @@ class TestGenericDataPlugin:
         assert result.data["temperature"] == "72"
         assert result.data["condition"] == "Sunny"
         assert result.data["feed_count"] == "1"
+
+    @patch("plugins.generic_data.requests.request")
+    def test_fetch_data_interpolates_url_placeholders(
+        self, mock_request, sample_manifest, sample_json_response
+    ):
+        mock_resp = Mock()
+        mock_resp.status_code = 200
+        mock_resp.content = b"x" * 100
+        mock_resp.json.return_value = sample_json_response
+        mock_resp.raise_for_status = Mock()
+        mock_request.return_value = mock_resp
+
+        plugin = GenericDataPlugin(sample_manifest)
+        plugin.config = {
+            "url": "https://api.example.com/data?d={{date}}",
+            "format": "json",
+            "mappings": [{"variable": "temperature", "path": "current.temp_f"}],
+        }
+        result = plugin.fetch_data()
+
+        assert result.available is True
+        mock_request.assert_called_once()
+        called_url = mock_request.call_args[0][1]
+        assert "{{" not in called_url
+        assert re.search(r"d=\d{4}-\d{2}-\d{2}", called_url)
+
+    @patch("plugins.generic_data.requests.request")
+    def test_fetch_data_interpolates_header_values(
+        self, mock_request, sample_manifest, sample_json_response
+    ):
+        mock_resp = Mock()
+        mock_resp.status_code = 200
+        mock_resp.content = b"x" * 100
+        mock_resp.json.return_value = sample_json_response
+        mock_resp.raise_for_status = Mock()
+        mock_request.return_value = mock_resp
+
+        plugin = GenericDataPlugin(sample_manifest)
+        plugin.config = {
+            "url": "https://api.example.com/data",
+            "format": "json",
+            "headers": [{"name": "X-Date", "value": "day-{{date}}"}],
+            "mappings": [{"variable": "temperature", "path": "current.temp_f"}],
+        }
+        result = plugin.fetch_data()
+
+        assert result.available is True
+        hdrs = mock_request.call_args.kwargs["headers"]
+        assert "{{" not in hdrs["X-Date"]
+        assert re.match(r"day-\d{4}-\d{2}-\d{2}", hdrs["X-Date"])
 
     @patch("plugins.generic_data.requests.request")
     def test_fetch_data_with_default_value(
