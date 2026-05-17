@@ -1,7 +1,7 @@
 {
   "id": "generic_data",
   "name": "Generic Data",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "Fetch data from any URL (JSON or XML) and map fields to template variables \u2014 supports multiple feeds",
   "author": "FiestaBoard Team",
   "repository": "https://github.com/Fiestaboard/fiestaboard-plugin--generic-data",
