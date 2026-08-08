@@ -251,9 +251,9 @@
     {
       "device_type": "note",
       "rows": [
-        "DATA FEEDS",
-        "3 FEEDS",
-        "ACTIVE"
+        "{67}{66}{65} DATA FEEDS",
+        "3 FEEDS {66}ACTIVE",
+        "ALL OK"
       ]
     }
   ],
