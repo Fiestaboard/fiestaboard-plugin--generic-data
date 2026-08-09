@@ -2,7 +2,7 @@
   "id": "generic_data",
   "name": "Generic Data",
   "version": "1.2.2",
-  "description": "Fetch data from any URL (JSON or XML) and map fields to template variables \u2014 supports multiple feeds",
+  "description": "Fetch data from any URL (JSON or XML) and map fields to template variables — supports multiple feeds",
   "author": "FiestaBoard Team",
   "repository": "https://github.com/Fiestaboard/fiestaboard-plugin--generic-data",
   "documentation": "README.md",
@@ -103,7 +103,7 @@
       "feeds": {
         "type": "array",
         "title": "Data Feeds",
-        "description": "Multiple data sources \u2014 each with its own URL, format, and mappings. When set, the top-level URL/mappings are ignored.",
+        "description": "Multiple data sources — each with its own URL, format, and mappings. When set, the top-level URL/mappings are ignored.",
         "items": {
           "type": "object",
           "properties": {
@@ -231,8 +231,30 @@
     {
       "src": "docs/board-display.png",
       "alt": "Generic Data displayed on a Vestaboard",
-      "caption": "Fetch data from any URL (JSON or XML) and map fields to template variables \u2014 supports multiple feeds",
+      "caption": "Fetch data from any URL (JSON or XML) and map fields to template variables — supports multiple feeds",
       "primary": true
+    }
+  ],
+  "teaser": "3 FEEDS ACTIVE",
+  "previews": [
+    {
+      "device_type": "flagship",
+      "rows": [
+        "{64}{64}{64}{64}{64}{64}{64}{64}{64}{64}{64}{64}{64}{64}{64}{64}{64}{64}{64}{64}{64}{64}",
+        "    ISS TRACKER",
+        "  LAT 32.71  LON 96.80",
+        "",
+        "    ALTITUDE 420 KM",
+        "   SPEED 27600 KM/H"
+      ]
+    },
+    {
+      "device_type": "note",
+      "rows": [
+        "{67}{66}{65} DATA FEEDS",
+        "3 FEEDS {66}ACTIVE",
+        "ALL OK"
+      ]
     }
   ],
   "demo": {
