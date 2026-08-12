@@ -1,7 +1,7 @@
 {
   "id": "generic_data",
   "name": "Generic Data",
-  "version": "1.2.2",
+  "version": "1.3.0",
   "description": "Fetch data from any URL (JSON or XML) and map fields to template variables — supports multiple feeds",
   "author": "FiestaBoard Team",
   "repository": "https://github.com/Fiestaboard/fiestaboard-plugin--generic-data",
@@ -72,7 +72,21 @@
         "type": "array",
         "title": "Variable Mappings",
         "description": "Map response fields to template variables (for single-feed mode)",
-        "ui:widget": "generic-data-mapping-helper",
+        "ui:widget": "json-path-mapper",
+        "ui:options": {
+          "probe": {
+            "url": "url",
+            "format": "format",
+            "method": "method",
+            "headers": "headers",
+            "body": "body"
+          },
+          "keys": {
+            "variable": "variable",
+            "path": "path",
+            "default": "default"
+          }
+        },
         "items": {
           "type": "object",
           "properties": {
@@ -226,7 +240,7 @@
     },
     "dynamic": true
   },
-  "fiestaboard_version": ">=4.2.0",
+  "fiestaboard_version": ">=8.25.5",
   "screenshots": [
     {
       "src": "docs/board-display.png",
