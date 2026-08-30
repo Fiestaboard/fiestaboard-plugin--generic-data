@@ -12,9 +12,14 @@ import logging
 import os
 import re
 from typing import Any, Dict, List, Optional, Tuple
-from xml.etree import ElementTree
+
+# Element is imported for typing only.  Every parse goes through defusedxml
+# below, which rejects the entity declarations that make stock ElementTree a
+# billion-laughs target.
+from xml.etree.ElementTree import Element  # nosec B405
 
 import requests
+from defusedxml.ElementTree import fromstring as xml_fromstring
 
 from src.plugins.base import PluginBase, PluginResult
 
@@ -62,7 +67,7 @@ def _resolve_path(data: Any, path: str) -> Any:
     return current
 
 
-def _xml_to_dict(element: ElementTree.Element) -> Any:
+def _xml_to_dict(element: Element) -> Any:
     """Convert an XML element tree into a nested dict/list structure.
 
     Leaf elements become ``{"tag": "text"}``.  Elements with children are
@@ -327,7 +332,7 @@ class GenericDataPlugin(PluginBase):
             if fmt == "json":
                 return response.json()
             if fmt == "xml":
-                root = ElementTree.fromstring(response.text)
+                root = xml_fromstring(response.text)
                 return _xml_to_dict(root)
         except Exception:
             logger.exception("Failed to parse response as %s", fmt)

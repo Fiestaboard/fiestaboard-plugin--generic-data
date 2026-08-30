@@ -979,3 +979,44 @@ class TestManifestMetadata:
 
         assert manifest["variables"].get("dynamic") is True, \
             "dynamic flag should be true for generic_data plugin"
+
+
+# ---------------------------------------------------------------------------
+# _parse_response XML hardening tests
+# ---------------------------------------------------------------------------
+
+class TestParseResponseXml:
+    """XML responses are parsed through defusedxml, not stock ElementTree."""
+
+    @staticmethod
+    def _response(text):
+        response = Mock()
+        response.text = text
+        return response
+
+    def test_wellformed_xml_still_parses(self):
+        result = GenericDataPlugin._parse_response(
+            self._response("<root><name>Test</name></root>"), "xml"
+        )
+        assert result == {"name": "Test"}
+
+    def test_entity_declaration_is_rejected(self):
+        """A billion-laughs payload must not expand; parsing fails closed."""
+        payload = (
+            '<!DOCTYPE lolz ['
+            '<!ENTITY lol "lol">'
+            '<!ENTITY lol2 "&lol;&lol;&lol;&lol;">'
+            ']><lolz>&lol2;</lolz>'
+        )
+        assert GenericDataPlugin._parse_response(self._response(payload), "xml") is None
+
+    def test_external_entity_is_rejected(self):
+        """External entity references must not be resolved (XXE)."""
+        payload = (
+            '<!DOCTYPE x [<!ENTITY xxe SYSTEM "file:///etc/passwd">]>'
+            '<x>&xxe;</x>'
+        )
+        assert GenericDataPlugin._parse_response(self._response(payload), "xml") is None
+
+    def test_malformed_xml_returns_none(self):
+        assert GenericDataPlugin._parse_response(self._response("<not-closed>"), "xml") is None
