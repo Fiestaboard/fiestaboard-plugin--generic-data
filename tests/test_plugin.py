@@ -15,6 +15,7 @@ from plugins.generic_data import (
     _resolve_path,
     _xml_to_dict,
     _build_feeds,
+    xml_fromstring,
     MAX_RESPONSE_BYTES,
     MAX_FEEDS,
 )
@@ -79,28 +80,24 @@ class TestXmlToDict:
     """Tests for XML to dict conversion."""
 
     def test_simple_element(self):
-        from xml.etree import ElementTree
-        root = ElementTree.fromstring("<root><name>Test</name></root>")
+        root = xml_fromstring("<root><name>Test</name></root>")
         result = _xml_to_dict(root)
         assert result == {"name": "Test"}
 
     def test_nested_elements(self):
-        from xml.etree import ElementTree
         xml = "<root><parent><child>value</child></parent></root>"
-        root = ElementTree.fromstring(xml)
+        root = xml_fromstring(xml)
         result = _xml_to_dict(root)
         assert result == {"parent": {"child": "value"}}
 
     def test_repeated_tags_become_list(self):
-        from xml.etree import ElementTree
         xml = "<root><item>a</item><item>b</item><item>c</item></root>"
-        root = ElementTree.fromstring(xml)
+        root = xml_fromstring(xml)
         result = _xml_to_dict(root)
         assert result == {"item": ["a", "b", "c"]}
 
     def test_empty_element(self):
-        from xml.etree import ElementTree
-        root = ElementTree.fromstring("<root><empty/></root>")
+        root = xml_fromstring("<root><empty/></root>")
         result = _xml_to_dict(root)
         assert result == {"empty": ""}
 
