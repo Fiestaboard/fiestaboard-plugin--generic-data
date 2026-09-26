@@ -21,14 +21,26 @@ from xml.etree.ElementTree import Element  # nosec B405
 import requests
 from defusedxml.ElementTree import fromstring as xml_fromstring
 
+from src.devices import BoardContext
 from src.plugins.base import PluginBase, PluginResult
+from src.text_to_board import take_tiles
 
 logger = logging.getLogger(__name__)
 
 MAX_RESPONSE_BYTES = 1_048_576  # 1 MB
 REQUEST_TIMEOUT = 30
-DISPLAY_WIDTH = 22
 MAX_FEEDS = 10
+
+# self.board is None outside a board-scoped render (unit tests, legacy
+# callers) -- fall back to a Flagship rather than hardcoding 22x6 here, so
+# there is exactly one place (BoardContext) that knows a Flagship's size.
+_DEFAULT_BOARD = BoardContext.from_device_type("flagship")
+
+HEADER_TEXT = "GENERIC DATA"
+
+# Below this many rows there isn't room for a header + blank separator on
+# top of at least one line of content -- every row goes to mappings instead.
+MIN_ROWS_FOR_HEADER = 4
 
 
 def _resolve_path(data: Any, path: str) -> Any:
@@ -251,6 +263,15 @@ class GenericDataPlugin(PluginBase):
             formatted_lines=self._format_display(data, all_mappings),
         )
 
+    def _board_dimensions(self) -> Tuple[int, int]:
+        """Effective (rows, cols) for the board currently bound to this render.
+
+        ``self.board`` is ``None`` outside a board-scoped call, in which case
+        a Flagship is assumed rather than crashing or hardcoding a size here.
+        """
+        board = self.board or _DEFAULT_BOARD
+        return board.rows, board.cols
+
     def _fetch_feed(
         self,
         feed: Dict[str, Any],
@@ -338,25 +359,44 @@ class GenericDataPlugin(PluginBase):
             logger.exception("Failed to parse response as %s", fmt)
         return None
 
-    @staticmethod
     def _format_display(
+        self,
         data: Dict[str, Any],
         mappings: List[Dict[str, str]],
     ) -> List[str]:
-        """Format mapped data for the 6-line board display."""
-        lines: List[str] = ["GENERIC DATA".center(DISPLAY_WIDTH), ""]
+        """Format mapped data for the board currently bound to this render.
 
-        for mapping in mappings[:4]:
+        The mappings list is unbounded -- users can configure as many as
+        they like across up to ``MAX_FEEDS`` feeds -- so this reflows rather
+        than truncating to a fixed count: every row/column figure comes from
+        the bound board (``self.board``, defaulting to a Flagship when
+        unbound), never a literal. A short, narrow board (a Note) shows as
+        many mapping lines as fit and drops the header to make room; a tall
+        board (a note array / panel) shows more mapping lines, up to one per
+        configured mapping.
+        """
+        rows, cols = self._board_dimensions()
+
+        lines: List[str] = []
+        show_header = rows >= MIN_ROWS_FOR_HEADER
+        if show_header:
+            header, _ = take_tiles(HEADER_TEXT, cols)
+            lines.append(header.center(cols))
+            lines.append("")
+
+        available = max(rows - len(lines), 0)
+        for mapping in mappings[:available]:
             var = mapping.get("variable", "")
             value = data.get(var, "")
             label = var.replace("_", " ").upper()
             line = f"{label}: {value}"
-            lines.append(line[:DISPLAY_WIDTH])
+            head, _ = take_tiles(line, cols)
+            lines.append(head)
 
-        while len(lines) < 6:
+        while len(lines) < rows:
             lines.append("")
 
-        return lines[:6]
+        return lines[:rows]
 
     def get_formatted_display(self) -> Optional[List[str]]:
         """Return default formatted generic data display."""
